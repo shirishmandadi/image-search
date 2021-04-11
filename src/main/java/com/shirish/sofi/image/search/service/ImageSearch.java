@@ -1,19 +1,18 @@
 package com.shirish.sofi.image.search.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.*;
-import com.shirish.sofi.image.search.domain.ErrorResponse;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.shirish.sofi.image.search.domain.Data;
+import com.shirish.sofi.image.search.domain.ErrorResponse;
 import com.shirish.sofi.image.search.domain.Image;
 import com.shirish.sofi.image.search.domain.ImageSearchResponseDEF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestTemplate;
 
-import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -23,29 +22,33 @@ public class ImageSearch {
     @Value("${giffy.api.key}")
     private String apiKey;
     public ImageSearchResponseDEF imageSearchService(String searchterm, int limit) {
-        System.out.println("Api Key " + apiKey);
-        System.out.println("resultLimit " + limit);
         String uri = "https://api.giphy.com/v1/gifs/search?api_key="+apiKey.trim()+ "&q=" + searchterm + "&limit="+limit+"&offset=0";
-        System.out.println("URI " + uri);
         String result = restTemplate.getForObject(uri, String.class);
         ImageSearchResponseDEF imageSearchResponseDEF = new ImageSearchResponseDEF();
+        try {
+            JsonObject convertedObject = new Gson().fromJson(result, JsonObject.class);
+            if (convertedObject.isJsonObject()) {
+                JsonElement metaData = convertedObject.get("meta");
+                if (metaData.getAsJsonObject().get("status").getAsInt() == 200) {
+                    JsonElement dataObject = convertedObject.get("data");
+                    JsonArray giphyImageObjects = dataObject.getAsJsonArray();
+                    if (giphyImageObjects.isJsonArray()) {
+                        if (giphyImageObjects.size() < 5) {
+                            return populateNoImagesFound();
+                        } else {
+                            imageSearchResponseDEF = populateImageSearchResponse(giphyImageObjects);
+                        }
 
-        JsonObject convertedObject = new Gson().fromJson(result, JsonObject.class);
-        if (convertedObject.isJsonObject()) {
-            JsonElement dataObject = convertedObject.get("data");
-            JsonArray giphyImageObjects = dataObject.getAsJsonArray();
-            if (giphyImageObjects.isJsonArray()) {
-                if (giphyImageObjects.size() < 5) {
-                    return populateNoImagesFound();
+                    } else {
+                        imageSearchResponseDEF = populateErrorResponse("InvalidJsonArrayObjet", "Invalid Json Object returned from Giphy");
+                    }
                 } else {
-                    imageSearchResponseDEF = populateImageSearchResponse(giphyImageObjects);
+                    populateErrorResponse(metaData.getAsJsonObject().get("status").getAsString(), metaData.getAsJsonObject().get("msg").getAsString());
+
                 }
-
-            } else {
-                imageSearchResponseDEF = populateErrorResponse();
             }
-
-            return imageSearchResponseDEF;
+        } catch ( Exception exp) {
+            populateErrorResponse("Unknown Error status", "Error while parsing Giphy Response");
         }
         return imageSearchResponseDEF;
     }
@@ -72,10 +75,10 @@ public class ImageSearch {
         return imageSearchResp;
     }
 
-    private ImageSearchResponseDEF populateErrorResponse() {
+    private ImageSearchResponseDEF populateErrorResponse(String errorStatus, String errorDesc) {
         ErrorResponse errorResp = new ErrorResponse();
-        errorResp.setDescription("InvalidJsonObject");
-        errorResp.setError_code("Invalid Json Object received from Giphy");
+        errorResp.setDescription(errorDesc);
+        errorResp.setError_code(errorStatus);
         List<ErrorResponse> errors = new ArrayList<>();
         errors.add(errorResp);
         ImageSearchResponseDEF imageSearchErrorResponseDEF = new ImageSearchResponseDEF();

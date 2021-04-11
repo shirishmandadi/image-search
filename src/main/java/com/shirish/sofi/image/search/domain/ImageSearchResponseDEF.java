@@ -1,11 +1,6 @@
 package com.shirish.sofi.image.search.domain;
-
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.sun.istack.internal.NotNull;
-import org.springframework.lang.NonNull;
-import org.springframework.validation.Errors;
-
 import java.util.List;
 
 public class ImageSearchResponseDEF {
@@ -19,7 +14,6 @@ public class ImageSearchResponseDEF {
 
     @Expose
     @SerializedName("Errors")
-    @NotNull
     private List<ErrorResponse> errors = null;
 
     public Integer getItemCount() {

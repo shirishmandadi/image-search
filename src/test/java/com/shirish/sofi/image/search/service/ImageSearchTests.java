@@ -28,6 +28,16 @@ public class ImageSearchTests {
         when(restTemplate.getForObject("https://api.giphy.com/v1/gifs/search?api_key=YKeWL64F8i9lxRJN269CqthXsB8n6TkF&q=cheeseburgers&limit=5&offset=0", String.class)).thenReturn(content);
         ImageSearchResponseDEF imageSearchResponseDEF = imageSearch.imageSearchService("cheeseburgers", 5);
         Assert.assertNotNull(imageSearchResponseDEF);
+        Assert.assertEquals(5, imageSearchResponseDEF.getData().getImages().size());
+
+    }
+    public void searchNoImagesTest() throws Exception{
+        GetImagesControllerTest getImagesControllerTest = new GetImagesControllerTest();
+        String content = getImagesControllerTest.readJson("giphymockresponse.json");
+        when(restTemplate.getForObject("https://api.giphy.com/v1/gifs/search?api_key=YKeWL64F8i9lxRJN269CqthXsB8n6TkF&q=cheeseburgers&limit=5&offset=0", String.class)).thenReturn(content);
+        ImageSearchResponseDEF imageSearchResponseDEF = imageSearch.imageSearchService("cheeseburgers", 5);
+        Assert.assertNotNull(imageSearchResponseDEF);
+        Assert.assertEquals(0,imageSearchResponseDEF.getItemCount().intValue());
 
     }
 }

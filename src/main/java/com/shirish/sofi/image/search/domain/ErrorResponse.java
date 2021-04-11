@@ -1,21 +1,24 @@
 package com.shirish.sofi.image.search.domain;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class ErrorResponse {
 
-    @Expose(deserialize = false, serialize = true)
-    private String error_code;
+    @Expose
+    @SerializedName("errorStatus")
+    private String errorStatus;
 
-    @Expose(deserialize = false, serialize = true)
+    @Expose
+    @SerializedName("description")
     private String description;
 
-    public String getError_code() {
-        return error_code;
+    public String getErrorStatus() {
+        return errorStatus;
     }
 
-    public void setError_code(String error_code) {
-        this.error_code = error_code;
+    public void setError_code(String errorStatus) {
+        this.errorStatus = errorStatus;
     }
 
     public String getDescription() {

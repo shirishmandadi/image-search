@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.client.RestTemplate;
 
 
 //@SpringBootTest
@@ -39,7 +40,8 @@ import org.springframework.util.StreamUtils;
 public class GetImagesControllerTest {
     @MockBean
     private ImageSearch imageSearchService;
-
+    @MockBean
+    RestTemplate restTemplate;
 
     @Autowired
     private MockMvc mockMvc;
@@ -47,8 +49,6 @@ public class GetImagesControllerTest {
     @Test
     public void getImages() throws Exception{
         String content = readJson("giphymockresponse.json");
-
-        //System.out.println("mock response " + content);
         JsonObject convertedObject = new Gson().fromJson(content, JsonObject.class);
         ImageSearchResponseDEF imageSearchResp = new ImageSearchResponseDEF();
         Data data = new Data();
